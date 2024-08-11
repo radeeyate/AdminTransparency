@@ -1,0 +1,9 @@
+name: AdminTransparency
+version: '1.0-SNAPSHOT'
+main: org.radi8.adminTransparency.AdminTransparency
+api-version: '1.21'
+
+commands:
+  toggle-exclusion:
+    description: Add or remove a player from seeing AdminTransparency messages
+    usage: /<command> <username>
