@@ -1,0 +1,5 @@
+# Change to true to have messages broadcast to operators
+broadcast-to-command-sender: false
+
+excluded-players:
+  - "example user"
