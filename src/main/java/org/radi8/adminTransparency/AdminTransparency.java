@@ -5,7 +5,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,12 +12,14 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.Objects;
 
 public final class AdminTransparency extends JavaPlugin implements Listener, CommandExecutor {
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
-        this.getCommand("toggle-exclusion").setExecutor(new ToggleExclusion());
+        Objects.requireNonNull(this.getCommand("toggle-exclusion")).setExecutor(new ToggleExclusion());
+        Objects.requireNonNull(this.getCommand("list-exclusions")).setExecutor(new ListExclusions());
 
         this.saveDefaultConfig();
 
@@ -31,7 +32,7 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
     }
 
     public List<String> getExcludedPlayers() {
-        @SuppressWarnings("unchecked") // idk if this is safe
+        @SuppressWarnings("unchecked") // I don't know if this is safe
         List<String> excludedPlayers = (List<String>) getConfig().getList("excluded-players");
 
         System.out.println(excludedPlayers);
@@ -45,8 +46,12 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
         String command = event.getMessage();
 
         if (player.isOp()) {
-            String message = ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + playerName + " executed a command: " + command;
+            String message = ChatColor.GREEN + "[AdminTransparency] " + ChatColor.YELLOW + playerName + ChatColor.RESET + " executed a command: " + ChatColor.YELLOW + command;
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                if (command.startsWith("/toggle-exclusion") && Objects.equals(command.split(" ")[1], p.getName())) {
+                    continue;
+                }
+
                 if (p.getName().equals(playerName) || getExcludedPlayers().contains(p.getName())) {
                     if (getConfig().getBoolean("broadcast-to-command-sender")) {
                         p.sendMessage(message);
@@ -64,27 +69,47 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
         @Override
         public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
             if (sender instanceof Player player) {
-                if (player.isOp()) {
-                    if (args.length > 0) {
-                        String targetPlayer = args[0];
-                        if (getExcludedPlayers().contains(targetPlayer)) {
-                            getConfig().getStringList("excluded-players").remove(targetPlayer);
-                            saveConfig();
+                if (args.length > 0) {
+                    String targetPlayer = args[0];
+                    if (getExcludedPlayers().contains(targetPlayer)) {
+                        List<String> excludedPlayers = getExcludedPlayers();
+                        excludedPlayers.remove(targetPlayer);
+                        getConfig().set("excluded-players", excludedPlayers);
+                        saveConfig();
 
-                            player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + targetPlayer + " removed from the exclusion list.");
-                        } else {
-                            getConfig().getStringList("excluded-players").add(targetPlayer);
-                            saveConfig();
-
-                            player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + targetPlayer + " added to the exclusion list.");
-                        }
+                        player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.YELLOW + targetPlayer + ChatColor.RESET + " removed from the exclusion list.");
                     } else {
-                        player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "You must specify a user.");
+                        List<String> excludedPlayers = getExcludedPlayers();
+                        excludedPlayers.add(targetPlayer);
+                        getConfig().set("excluded-players", excludedPlayers);
+                        saveConfig();
+
+                        player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.YELLOW + targetPlayer + ChatColor.RESET + " added to the exclusion list.");
                     }
                 } else {
-                    player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "You must be an operator to execute this command.");
+                    player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "You must specify a user.");
                 }
             }
+
+            return true;
+        }
+    }
+
+    public class ListExclusions implements CommandExecutor {
+        @Override
+        public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+            List<String> excludedPlayers = getExcludedPlayers();
+            String message;
+
+            if (excludedPlayers.size() == 1) {
+                message = ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "There is " + ChatColor.YELLOW + excludedPlayers.size() + ChatColor.RESET + " excluded player: " + ChatColor.YELLOW + excludedPlayers.getFirst() + ChatColor.RESET + ".";
+            } else if (excludedPlayers.isEmpty()) {
+                message = ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "There are no excluded players.";
+            } else {
+                message = ChatColor.GREEN + "[AdminTransparency]" + ChatColor.RESET + "There are " + ChatColor.YELLOW + excludedPlayers.size() + ChatColor.RESET + " excluded players: " + ChatColor.YELLOW + String.join(", ", excludedPlayers) + ChatColor.RESET + ".";
+            }
+
+            sender.sendMessage(message);
 
             return true;
         }

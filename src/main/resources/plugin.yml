@@ -7,3 +7,12 @@ commands:
   toggle-exclusion:
     description: Add or remove a player from seeing AdminTransparency messages
     usage: /<command> <username>
+  list-exclusions:
+    description: List every player that has been excluded.
+    usage: /<command>
+
+permissions:
+  toggle-exclusion:
+    default: op
+  list-exclusions:
+    default: op

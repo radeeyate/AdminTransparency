@@ -2,4 +2,4 @@
 broadcast-to-command-sender: false
 
 excluded-players:
-  - "example user"
+  - example-user
