@@ -1,5 +1,5 @@
 name: AdminTransparency
-version: '1.0-SNAPSHOT'
+version: '1.1-SNAPSHOT'
 main: org.radi8.adminTransparency.AdminTransparency
 api-version: '1.21'
 
