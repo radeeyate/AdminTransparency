@@ -32,7 +32,7 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
     }
 
     public List<String> getExcludedPlayers() {
-        @SuppressWarnings("unchecked") // I don't know if this is safe
+        @SuppressWarnings("unchecked") // idk if this is safe again
         List<String> excludedPlayers = (List<String>) getConfig().getList("excluded-players");
 
         System.out.println(excludedPlayers);
@@ -68,7 +68,7 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
     public class ToggleExclusion implements CommandExecutor {
         @Override
         public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-            if (sender instanceof Player player) {
+            if (sender instanceof Player player && player.isOp()) {
                 if (args.length > 0) {
                     String targetPlayer = args[0];
                     if (getExcludedPlayers().contains(targetPlayer)) {
@@ -89,6 +89,8 @@ public final class AdminTransparency extends JavaPlugin implements Listener, Com
                 } else {
                     player.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "You must specify a user.");
                 }
+            } else {
+                sender.sendMessage(ChatColor.GREEN + "[AdminTransparency] " + ChatColor.RESET + "You do not have permission to use this command.");
             }
 
             return true;

@@ -10,9 +10,3 @@ commands:
   list-exclusions:
     description: List every player that has been excluded.
     usage: /<command>
-
-permissions:
-  toggle-exclusion:
-    default: op
-  list-exclusions:
-    default: op
